@@ -24,6 +24,7 @@
 - O. Reg. 941, s. 77.2(i): the practitioner shall regard the duty for public welfare as paramount.
 - O. Reg. 941, s. 72(2): professional misconduct, including (a) negligence; (b) failure to make reasonable provision for safeguarding life, health or property; (c) failure to act to correct or report a situation that may endanger public safety or welfare; (d) failure to make responsible provision for complying with applicable statutes, regulations, standards, codes and by-laws; (e) signing or sealing a document not actually prepared or checked by the practitioner; (f) failure to present clearly to the employer the consequences of overruling engineering judgment; (h) undertaking work the practitioner is not competent to perform; (i) failure to disclose a conflict of interest; (j) conduct regarded as disgraceful, dishonourable or unprofessional.
 - If you need a more specific s. 77 subsection than the two above, cite "O. Reg. 941, s. 77" and say you are not certain of the subsection.
+- Applying s. 72(2)(e): a seal means the engineer prepared or actually checked the work. Any arrangement where someone seals work they did not prepare, supervise or properly review is a s. 72(2)(e) issue, not only a competence issue.
 
 ## Q2 baseline: law of the land
 
@@ -33,10 +34,12 @@
 - Environmental Protection Act, R.S.O. 1990, c. E.19, s. 14 (no discharge of a contaminant that causes an adverse effect).
 - Ontario Water Resources Act, R.S.O. 1990, c. O.40.
 - Endangered Species Act, 2007, S.O. 2007, c. 6 and the federal Species at Risk Act, S.C. 2002, c. 29.
-- Planning Act, R.S.O. 1990, c. P.13 (land use, municipal approvals).
+- Planning Act, R.S.O. 1990, c. P.13 (land use, municipal approvals), and the Provincial Planning Statement, 2024, which planning decisions must be consistent with (e.g. protection of agricultural land, natural heritage and water resources; cite a section only if you are sure of it).
+- Conservation Authorities Act, R.S.O. 1990, c. C.27, s. 28 (permits for development in or near watercourses, wetlands, valleys and shorelines).
 - Accessibility for Ontarians with Disabilities Act, 2005, S.O. 2005, c. 11 and the Integrated Accessibility Standards, O. Reg. 191/11 (Part IV.1, Design of Public Spaces).
 - Occupational Health and Safety Act, R.S.O. 1990, c. O.1 and Construction Projects, O. Reg. 213/91.
 - Ontario Human Rights Code, R.S.O. 1990, c. H.19.
+- Privacy, for projects that collect personal information (video, location, health, usage data): Municipal Freedom of Information and Protection of Privacy Act, R.S.O. 1990, c. M.56 (municipalities); Freedom of Information and Protection of Privacy Act, R.S.O. 1990, c. F.31 (provincial bodies); PIPEDA, S.C. 2000, c. 5 (private organizations in commercial activity). Pick the one that matches who collects the data.
 - Occupiers' Liability Act, R.S.O. 1990, c. O.2.
 - Impact Assessment Act, S.C. 2019, c. 28, s. 1 (federal, for designated projects; amended in 2024 after the 2023 Supreme Court reference, so flag uncertainty about current scope).
 - Constitution Act, 1867, ss. 91 and 92 (division of federal and provincial powers).
@@ -45,6 +48,8 @@
 ## Q3 baseline: benefit to the land
 
 - Environmental sustainability: life-cycle impacts, emissions, water, habitat, long-term stewardship.
-- Indigenous rights and relationships with land: York University is on Treaty 13 land (the Toronto Purchase, Mississaugas of the Credit First Nation) and within the Dish With One Spoon Wampum Belt Covenant territory. Consider treaty relationships, the Crown's duty to consult under s. 35 of the Constitution Act, 1982 (Haida Nation v. British Columbia, 2004 SCC 73), and the United Nations Declaration on the Rights of Indigenous Peoples Act, S.C. 2021, c. 14 (free, prior and informed consent).
-- Distribution of benefits and harms: who gains, who bears the risk, equity, diversity, inclusion and accessibility.
+- Indigenous rights and relationships with land: York University is on Treaty 13 land (the Toronto Purchase, Mississaugas of the Credit First Nation) and within the Dish With One Spoon Wampum Belt Covenant territory. Consider treaty relationships, the Crown's duty to consult under s. 35 of the Constitution Act, 1982 (Haida Nation v. British Columbia, 2004 SCC 73), and the United Nations Declaration on the Rights of Indigenous Peoples Act, S.C. 2021, c. 14 (free, prior and informed consent). The duty to consult belongs to the Crown, but Haida allows the Crown to delegate procedural parts of it to project proponents, and in practice developers are routinely expected to do that engagement. Do not treat the Crown's role as a reason for a proponent to do nothing.
+- Distribution of benefits and harms: who gains, who bears the risk, equity, diversity, inclusion and accessibility. Check whether the people who benefit are the same people who bear the risks and costs.
+- Quality of engagement: not just whether people were consulted, but whether the method (timing, format, location, language, accessibility, how early in the project) let the affected groups actually take part and influence the design.
+- Land use: long-term loss of farmland, wetlands, habitat or other land uses is a cost to weigh, even when the project's purpose is beneficial.
 - Design thinking: was the project designed with and for the people it affects (empathize, define, ideate, prototype, test)?
