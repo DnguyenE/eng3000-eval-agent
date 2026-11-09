@@ -58,4 +58,5 @@ Rules for the block:
 - Use `null` for a score you cannot give, with rating `unknown`.
 - Give at least two `ethics` entries and at least one finding per question.
 - Pick exactly one value for every `a | b | c` field.
+- `confidence`: `high` only when the finding rests on facts stated in the description and a provision you are sure of; `medium` when you inferred the facts or are unsure of the exact section; `low` when both are uncertain. Most findings about things the description does not mention should be `medium` or `low`.
 - Keep each string short (one or two sentences) so the whole block stays readable.
