@@ -53,8 +53,13 @@ function localApi(): Plugin {
   }
 }
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ command, mode }) => {
   Object.assign(process.env, loadEnv(mode, process.cwd(), ''))
+  if (command === 'serve' && !process.env.GROQ_API_KEY && !process.env.GEMINI_API_KEY) {
+    console.warn(
+      '\n\x1b[33m[local-api] No AI keys found. Add GROQ_API_KEY and/or GEMINI_API_KEY to .env.local, then restart.\x1b[0m\n',
+    )
+  }
   return {
     plugins: [react(), tailwindcss(), localApi()],
   }

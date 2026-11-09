@@ -9,6 +9,7 @@ Built with React + Vite, hosted on Vercel. Uses Groq's free API, with Gemini as 
 ```bash
 npm install
 cp .env.example .env.local   # add your Groq and/or Gemini key
+npm run check:keys           # confirms each key and model works
 npm run dev
 ```
 
