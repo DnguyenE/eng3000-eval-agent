@@ -9,13 +9,13 @@ const providers = [
   {
     name: 'Groq',
     key: process.env.GROQ_API_KEY,
-    models: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
+    models: process.env.GROQ_MODEL || 'openai/gpt-oss-120b,qwen/qwen3.8-27b',
     url: 'https://api.groq.com/openai/v1/chat/completions',
   },
   {
     name: 'Gemini',
     key: process.env.GEMINI_API_KEY,
-    models: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
+    models: process.env.GEMINI_MODEL || 'gemini-3.5-flash,gemini-3.5-flash-lite',
     url: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
   },
 ]
@@ -32,6 +32,7 @@ for (const provider of providers) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${provider.key}` },
         body: JSON.stringify({ model, messages: [{ role: 'user', content: 'Say OK.' }], max_tokens: 5 }),
+        signal: AbortSignal.timeout(30_000),
       })
       if (res.ok) {
         working++

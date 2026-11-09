@@ -51,7 +51,7 @@ function configuredProviders(): Provider[] {
   const geminiKey = process.env.GEMINI_API_KEY
 
   if (groqKey) {
-    for (const model of modelList(process.env.GROQ_MODEL, 'llama-3.3-70b-versatile')) {
+    for (const model of modelList(process.env.GROQ_MODEL, 'openai/gpt-oss-120b,qwen/qwen3.8-27b')) {
       providers.push({
         name: 'Groq',
         url: 'https://api.groq.com/openai/v1/chat/completions',
@@ -62,7 +62,7 @@ function configuredProviders(): Provider[] {
   }
 
   if (geminiKey) {
-    for (const model of modelList(process.env.GEMINI_MODEL, 'gemini-2.5-flash')) {
+    for (const model of modelList(process.env.GEMINI_MODEL, 'gemini-3.5-flash,gemini-3.5-flash-lite')) {
       providers.push({
         name: 'Gemini',
         url: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
@@ -133,24 +133,31 @@ function streamText(upstream: ReadableStream<Uint8Array>): ReadableStream<Uint8A
   return new ReadableStream<Uint8Array>({
     async pull(controller) {
       try {
-        const { done, value } = await reader.read()
-        if (done) {
-          controller.close()
-          return
-        }
-        buffer += decoder.decode(value, { stream: true })
-        const lines = buffer.split('\n')
-        buffer = lines.pop() ?? ''
-        for (const line of lines) {
-          const data = line.trim()
-          if (!data.startsWith('data:')) continue
-          const payload = data.slice(5).trim()
-          if (payload === '[DONE]') continue
-          try {
-            const text = JSON.parse(payload)?.choices?.[0]?.delta?.content
-            if (typeof text === 'string' && text) controller.enqueue(encoder.encode(text))
-          } catch {
-            // Ignore keep-alive or partial lines that are not JSON.
+        // Keep reading until we emit something: a pull that enqueues nothing is never re-invoked,
+        // which stalls the stream (e.g. reasoning models send many content-less chunks first).
+        for (let emitted = false; !emitted; ) {
+          const { done, value } = await reader.read()
+          if (done) {
+            controller.close()
+            return
+          }
+          buffer += decoder.decode(value, { stream: true })
+          const lines = buffer.split('\n')
+          buffer = lines.pop() ?? ''
+          for (const line of lines) {
+            const data = line.trim()
+            if (!data.startsWith('data:')) continue
+            const payload = data.slice(5).trim()
+            if (payload === '[DONE]') continue
+            try {
+              const text = JSON.parse(payload)?.choices?.[0]?.delta?.content
+              if (typeof text === 'string' && text) {
+                controller.enqueue(encoder.encode(text))
+                emitted = true
+              }
+            } catch {
+              // Ignore keep-alive or partial lines that are not JSON.
+            }
           }
         }
       } catch {
