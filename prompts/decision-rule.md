@@ -20,7 +20,7 @@ A **critical failure** is any of:
 
 Apply the rule in this order:
 
-1. If key information is missing and the user has not told you to proceed, do not give a verdict. Ask for the information.
+1. If key information is genuinely missing, the answer could change the verdict, and the user has not told you to proceed, do not give a verdict. Ask for the information. If a critical failure is already clear from the description, skip this step.
 2. If **any** section has a critical failure (score 0), the verdict is **do not proceed**.
 3. If every section scores 3, the verdict is **proceed**.
 4. Otherwise the verdict is **proceed with conditions**. List each condition, the section it fixes, and the provision it relies on. If the total score is 4 or less, explain why redesign may be better than conditions.
