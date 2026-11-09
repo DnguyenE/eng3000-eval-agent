@@ -1,20 +1,44 @@
 # Discipline context
 
 <!--
-  EDIT THIS FILE once your group picks its engineering field from Part 1.
-  1. Replace "General (not yet chosen)" below with your field.
-  2. Add the acts, regulations, codes and standards specific to that field.
-  3. Keep each entry as "Name, citation: what it covers" so the agent can cite it.
+  Field: mechanical engineering, matching the group's Part 1 cases (Lac-Megantic and Ocean Ranger).
+  Keep each entry as "Name, citation: what it covers" so the agent can cite it.
+  Remove "(verify)" from an entry once someone has checked its section number.
   Verify every section number against Ontario e-Laws (ontario.ca/laws) or
   Justice Laws (laws-lois.justice.gc.ca) before relying on it.
   Text inside these HTML comments is removed before the prompt is sent to the model.
 -->
 
-**Engineering field:** General (not yet chosen). Treat the project as a general Ontario engineering project and use the baseline below.
+**Engineering field:** Mechanical engineering (machinery, pressure equipment, HVAC and refrigeration, fuel systems, vehicles and rail equipment, offshore and industrial plant). Assess every project from a mechanical engineer's point of view, using the field-specific provisions below together with the baselines.
+
+Entries marked "(verify)" are ones whose exact section or regulation number has not been confirmed. When you cite one of them, give it low or medium confidence and say the number should be checked.
 
 ## Field-specific provisions
 
-- (Add your discipline's acts, codes and standards here, e.g. CSA standards, the Canadian Highway Bridge Design Code CSA S6, the Ontario Electrical Safety Code, PIPEDA, etc.)
+- Technical Standards and Safety Act, 2000, S.O. 2000, c. 16: safety of pressure equipment, fuels, elevating and amusement devices, administered by the Technical Standards and Safety Authority (TSSA).
+- Boilers and Pressure Vessels, O. Reg. 220/01 (under the TSSA Act): boiler, pressure vessel and pressure piping designs must be registered with TSSA before construction or installation; adopts CSA B51 (Boiler, pressure vessel and pressure piping code).
+- Operating Engineers, O. Reg. 219/01 (under the TSSA Act): certified operating engineers required for boiler and refrigeration plants above set capacities.
+- Gaseous Fuels, O. Reg. 212/01 and Fuel Oil, O. Reg. 213/01 (under the TSSA Act): fuel-fired appliances and piping; adopt CSA B149.1 (natural gas and propane installation) and CSA B139 (oil-burning equipment).
+- Elevating Devices, O. Reg. 209/01 and Amusement Devices, O. Reg. 221/01 (under the TSSA Act): design registration, inspection and licensing; elevating devices adopt CSA B44.
+- Industrial Establishments, R.R.O. 1990, Reg. 851 (under the Occupational Health and Safety Act), s. 7: a pre-start health and safety review (PSR) by a professional engineer is required before certain new or modified machinery, apparatus, racking or processes are used.
+- Reg. 851, ss. 24 and 25 (verify): guarding of exposed moving parts and in-running nip hazards on machines; CSA Z432 (safeguarding of machinery) is the usual design standard.
+- Performance Standards, O. Reg. 260/08 (under the Professional Engineers Act) (verify subsection): the minimum content and conduct of a pre-start health and safety review prepared by a professional engineer.
+- Ontario Building Code, O. Reg. 332/12, Part 6 (heating, ventilating and air-conditioning), Part 7 (plumbing) and Part 12 (resource conservation and energy efficiency); CSA B52 (mechanical refrigeration code).
+- Electrical Safety Code, O. Reg. 164/99 (under the Electricity Act, 1998): electrical equipment on machinery and plant, inspected by the Electrical Safety Authority.
+- Environmental Protection Act, R.S.O. 1990, c. E.19, s. 9: an Environmental Compliance Approval is needed for equipment that emits contaminants, including noise and vibration, to the air; Air Pollution - Local Air Quality, O. Reg. 419/05. The MECP noise guideline NPC-300 is a guideline, not a regulation.
+- Ozone Depleting Substances and Other Halocarbons, O. Reg. 463/10 (under the EPA): refrigerants must be recovered, not vented; certified technicians required. Federal Halocarbon Regulations, 2022, SOR/2022-110 (verify) apply to federal works and undertakings.
+- Energy Efficiency Act, S.C. 1992, c. 36 and the federal Energy Efficiency Regulations: minimum efficiency for regulated energy-using products. Ontario Energy and Water Efficiency - Appliances and Products, O. Reg. 509/18 (verify).
+- Canada Consumer Product Safety Act, S.C. 2010, c. 21: consumer products must not pose an unreasonable danger to health or safety.
+- Motor Vehicle Safety Act, S.C. 1993, c. 16: federal safety standards for new vehicles and vehicle equipment; Highway Traffic Act, R.S.O. 1990, c. H.8 for vehicles operated in Ontario.
+- Railway Safety Act, R.S.C. 1985, c. 32 (4th Supp.): safety of federally regulated railways, including the Canadian Rail Operating Rules and train securement rules made under it (verify rule numbers).
+- Transportation of Dangerous Goods Act, 1992, S.C. 1992, c. 34: means of containment (for example rail tank cars) and handling of dangerous goods such as crude oil.
+- Canada Labour Code, R.S.C. 1985, c. L-2, Part II: occupational health and safety for federally regulated workplaces (rail, interprovincial transport, some offshore work).
+- Canada-Newfoundland and Labrador Atlantic Accord Implementation Act, S.C. 1987, c. 3: offshore oil and gas safety off Newfoundland and Labrador; Oil and Gas Occupational Safety and Health Regulations, SOR/87-612 (verify current status), including standby vessel requirements.
+
+## Jurisdiction for mechanical projects
+
+- Railways, interprovincial pipelines and other works that cross provincial borders are federal (Constitution Act, 1867, s. 92(10)(a), read with s. 91(29)). Vehicle safety standards and offshore oil and gas are also largely federal. For these projects, apply the federal law above for Q2 and say that Ontario codes may not apply.
+- Professional duties under the Professional Engineers Act and O. Reg. 941 still apply to any Ontario licence holder working on the project, wherever it is built. If a project is outside Ontario or in the past, assess it as if it were proposed in Ontario today.
 
 ## Q1 baseline: Ontario professional engineering obligations
 
@@ -48,6 +72,8 @@
 ## Q3 baseline: benefit to the land
 
 - Environmental sustainability: life-cycle impacts, emissions, water, habitat, long-term stewardship.
+- Mechanical-specific sustainability: life-cycle energy use and efficiency, refrigerant global warming potential and leakage, fuel choice, noise and vibration for neighbours, and design for maintenance, repair and end of life (recovery, recycling, safe decommissioning).
+- Safe operation over the whole life: whether the design depends on operator training, written procedures, inspection and maintenance that are actually planned and funded, and whether the people operating the equipment can read its state and control it safely in an emergency.
 - Indigenous rights and relationships with land: York University is on Treaty 13 land (the Toronto Purchase, Mississaugas of the Credit First Nation) and within the Dish With One Spoon Wampum Belt Covenant territory. Consider treaty relationships, the Crown's duty to consult under s. 35 of the Constitution Act, 1982 (Haida Nation v. British Columbia, 2004 SCC 73), and the United Nations Declaration on the Rights of Indigenous Peoples Act, S.C. 2021, c. 14 (free, prior and informed consent). The duty to consult belongs to the Crown, but Haida allows the Crown to delegate procedural parts of it to project proponents, and in practice developers are routinely expected to do that engagement. Do not treat the Crown's role as a reason for a proponent to do nothing.
 - Distribution of benefits and harms: who gains, who bears the risk, equity, diversity, inclusion and accessibility. Check whether the people who benefit are the same people who bear the risks and costs.
 - Quality of engagement: not just whether people were consulted, but whether the method (timing, format, location, language, accessibility, how early in the project) let the affected groups actually take part and influence the design.

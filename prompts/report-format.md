@@ -14,7 +14,7 @@
     "name": "short project name",
     "summary": "one or two sentences",
     "location": "where",
-    "disciplines": ["civil"],
+    "disciplines": ["mechanical"],
     "phase": "e.g. concept, design, pre-construction",
     "decision_makers": ["who decides"]
   },

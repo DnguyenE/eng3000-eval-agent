@@ -3,7 +3,7 @@ import { EXAMPLES } from '../config/examples'
 
 export function ExampleChips({ onPick, compact }: { onPick: (prompt: string) => void; compact?: boolean }) {
   return (
-    <div className={`grid gap-3 ${compact ? 'grid-cols-3' : 'sm:grid-cols-3'}`}>
+    <div className={`grid gap-3 ${compact ? 'grid-cols-2' : 'sm:grid-cols-2'}`}>
       {EXAMPLES.map((example, i) => (
         <motion.button
           key={example.id}

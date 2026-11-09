@@ -231,7 +231,7 @@ export async function POST(request: Request): Promise<Response> {
           'Content-Type': 'text/plain; charset=utf-8',
           'Cache-Control': 'no-store',
           'X-Accel-Buffering': 'no',
-          'X-Provider': `${provider.name} · ${provider.model}`,
+          'X-Provider': `${provider.name} - ${provider.model}`,
         },
       })
     }
