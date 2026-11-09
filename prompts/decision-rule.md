@@ -13,6 +13,8 @@ Score each of Q1, Q2 and Q3 from 0 to 3:
 
 **Scoring when information is missing.** Score what the project actually involves, not how much the description says. First work out the foreseeable impacts from the project's facts. If a section's concerns genuinely do not arise for this project, or the project handles them, it can score 3: a project is not marked down for not touching an area. If the facts point to a foreseeable impact the description does not address, that is a gap: score 2 with a condition, or `unknown` (score `null`) if you cannot tell whether it is handled, and list it in `missing_information`. Never score a section 0 on silence alone.
 
+**Approvals in progress.** Judge approvals against the project's phase. This covers every required step, not just permits: approvals, registrations, inspections, engineering reviews (such as a pre-start health and safety review), assessments and similar. A required step that has been identified and is planned or applied for at the right stage (for example, applied for during design, reviewed or inspected before first use) counts as met, not as a gap. Note it as a condition to obtain before the relevant step, but do not lower the score for it. Lower the score only when a required step is missing, skipped, late for the phase (for example, planned after the work it is meant to authorize), or not identified at all.
+
 A **critical failure** is any of:
 
 - a credible risk to public safety, life or health that is not addressed (O. Reg. 941, s. 77.2(i) and s. 72(2)(b));
