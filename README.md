@@ -1,5 +1,5 @@
 # Project Evaluation Agent
-
+ 
 ENG 3000 Part 2. A chat agent that evaluates an engineering project against Ontario professional obligations (Q1), the law (Q2), and benefit to the land (Q3), then gives a recommendation.
 
 Built with React + Vite, hosted on Vercel. Uses Groq's free API, with Gemini as a backup.
