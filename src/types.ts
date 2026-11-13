@@ -10,7 +10,7 @@ export interface Message {
 }
 
 export type Verdict = 'proceed' | 'proceed_with_conditions' | 'do_not_proceed'
-export type Rating = 'pass' | 'conditional' | 'fail' | 'unknown'
+export type Rating = 'pass' | 'concern' | 'fail' | 'unknown'
 export type Severity = 'critical' | 'major' | 'minor' | 'positive'
 export type Level = 'low' | 'medium' | 'high'
 

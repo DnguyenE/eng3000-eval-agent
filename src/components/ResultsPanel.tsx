@@ -29,7 +29,7 @@ const VERDICT_STYLE: Record<Verdict, { label: string; ring: string; text: string
 
 const RATING_STYLE: Record<Rating, string> = {
   pass: 'bg-emerald-400/15 text-emerald-300',
-  conditional: 'bg-amber-400/15 text-amber-300',
+  concern: 'bg-amber-400/15 text-amber-300',
   fail: 'bg-rose-400/15 text-rose-300',
   unknown: 'bg-slate-400/15 text-slate-300',
 }

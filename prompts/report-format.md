@@ -23,7 +23,7 @@
   ],
   "q1": {
     "score": 2,
-    "rating": "pass | conditional | fail | unknown",
+    "rating": "pass | concern | fail | unknown",
     "summary": "one or two sentences",
     "findings": [
       {
@@ -34,8 +34,8 @@
       }
     ]
   },
-  "q2": { "score": 2, "rating": "conditional", "summary": "...", "findings": [] },
-  "q3": { "score": 2, "rating": "conditional", "summary": "...", "findings": [] },
+  "q2": { "score": 2, "rating": "concern", "summary": "...", "findings": [] },
+  "q3": { "score": 2, "rating": "concern", "summary": "...", "findings": [] },
   "risks": [
     { "risk": "what could go wrong", "likelihood": "low | medium | high", "severity": "low | medium | high | critical", "unknowns": "what is not known" }
   ],
@@ -45,7 +45,7 @@
   "conflicts": [
     { "between": "Q1 vs Q3", "description": "where the answers pull in different directions" }
   ],
-  "decision_rule_applied": "Scores Q1=2, Q2=2, Q3=1, total 5/9; no critical failure, so proceed with conditions.",
+  "decision_rule_applied": "Q1 Concern (2), Q2 Concern (2), Q3 Concern (1), total 5/9; risks acceptable; no Fail, so proceed with conditions.",
   "verdict": "proceed | proceed_with_conditions | do_not_proceed",
   "conditions": ["condition and the provision it relies on"],
   "uncertainties": ["what you are unsure about"],
@@ -55,7 +55,7 @@
 
 Rules for the block:
 
-- Use `null` for a score you cannot give, with rating `unknown`.
+- Use `null` for a score you cannot give, with rating `unknown`. Otherwise the rating follows the score: 3 is `pass`, 2 or 1 is `concern`, 0 is `fail`.
 - Give at least two `ethics` entries and at least one finding per question.
 - Pick exactly one value for every `a | b | c` field.
 - `confidence`: `high` only when the finding rests on facts stated in the description and a provision you are sure of; `medium` when you inferred the facts or are unsure of the exact section; `low` when both are uncertain. Most findings about things the description does not mention should be `medium` or `low`.

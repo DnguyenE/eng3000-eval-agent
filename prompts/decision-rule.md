@@ -1,15 +1,21 @@
 # Decision rule
 
-<!-- EDIT THIS FILE to match the decision rule in your group's Evaluation Platform. -->
+<!--
+  Matches the decision rule (section 8) of the group's Project Evaluation Platform in the Part 2 report,
+  with Q3 added to the Fail rule and a 0-3 score kept under each rating for detail.
+-->
 
-Score each of Q1, Q2 and Q3 from 0 to 3:
+Rate each of Q1, Q2 and Q3 as **Pass**, **Concern** or **Fail**, as in the group's Project Evaluation Platform, and give a 0 to 3 score under the rating for detail:
 
-| Score | Meaning |
-| --- | --- |
-| 3 | Fully meets the criteria, with evidence. |
-| 2 | Minor gaps that can be fixed with conditions. |
-| 1 | Major gaps: significant work or redesign needed. |
-| 0 | Critical failure. |
+| Score | Rating | Meaning |
+| --- | --- | --- |
+| 3 | Pass | Fully meets the criteria, with evidence. |
+| 2 | Concern | Minor gaps that can be fixed with conditions. |
+| 1 | Concern | Major gaps: significant work or redesign needed. |
+| 0 | Fail | Critical failure. |
+| `null` | Unknown | You cannot judge it from the description. |
+
+Also judge whether the project's **risks** are acceptable. They are not acceptable when a risk is high likelihood with high or critical severity and nothing in the project mitigates it.
 
 **Scoring when information is missing.** Score what the project actually involves, not how much the description says. First work out the foreseeable impacts from the project's facts. If a section's concerns genuinely do not arise for this project, or the project handles them, it can score 3: a project is not marked down for not touching an area. If the facts point to a foreseeable impact the description does not address, that is a gap: score 2 with a condition, or `unknown` (score `null`) if you cannot tell whether it is handled, and list it in `missing_information`. Never score a section 0 on silence alone.
 
@@ -24,9 +30,9 @@ A **critical failure** is any of:
 
 Apply the rule in this order:
 
-1. Only if the description is too thin to make any meaningful findings (see "How to work", rule 1), ask for more information instead of giving a verdict. Otherwise always give a verdict, scoring what you cannot judge as `unknown`.
-2. If **any** section has a critical failure (score 0), the verdict is **do not proceed**.
-3. If every section scores 3, the verdict is **proceed**.
-4. Otherwise the verdict is **proceed with conditions**. List each condition, the section it fixes, and the provision it relies on. If the total score is 4 or less, explain why redesign may be better than conditions.
+1. Only if the description is too thin to make any meaningful findings (see "How to work", rule 1), ask for more information instead of giving a verdict. Otherwise always give a verdict, rating what you cannot judge as unknown.
+2. If **any** of Q1, Q2 or Q3 is a **Fail** (score 0), or the risks are not acceptable, the verdict is **do not proceed**.
+3. If any section is a **Concern** or unknown, the verdict is **proceed with conditions**. List each condition, the section it fixes, and the provision it relies on. If the total score is 4 or less, explain why redesign may be better than conditions.
+4. If every section is a **Pass** and the risks are acceptable, the verdict is **proceed**.
 
-Always state the scores and the total out of 9 when you apply the rule.
+Always state the ratings, the scores, the total out of 9 and whether the risks are acceptable when you apply the rule. If a section is unknown, give the total over the scored sections and name the unknown one (for example "6/6 scored, Q3 unknown").

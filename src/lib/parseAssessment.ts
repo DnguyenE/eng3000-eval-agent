@@ -34,7 +34,8 @@ function section(v: unknown): SectionResult {
   const score = Number.isFinite(rawScore) ? Math.max(0, Math.min(3, Math.round(rawScore))) : null
   return {
     score,
-    rating: oneOf<Rating>(o.rating, ['pass', 'conditional', 'fail', 'unknown'], 'unknown'),
+    // 'conditional' was the old name for 'concern'; keep reading it from earlier replies.
+    rating: oneOf<Rating>(str(o.rating).toLowerCase() === 'conditional' ? 'concern' : o.rating, ['pass', 'concern', 'fail', 'unknown'], 'unknown'),
     summary: str(o.summary),
     findings: objList(o.findings).map(
       (f): Finding => ({
