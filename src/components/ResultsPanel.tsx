@@ -1,5 +1,6 @@
 import { motion, type Variants } from 'motion/react'
 import type { ReactNode } from 'react'
+import { checkAssessment, checkCitation, RESULT_LABEL, worstResult, type CheckResult, type CitationCheck } from '../lib/citationCheck'
 import type { Assessment, Finding, Level, Rating, SectionResult, Severity, Verdict } from '../types'
 import { AlertIcon, LeafIcon, PrintIcon, ScaleIcon, ShieldIcon } from './icons'
 
@@ -48,6 +49,22 @@ const LEVEL_STYLE: Record<Level | 'critical', string> = {
   critical: 'text-rose-300',
 }
 
+const CHECK_STYLE: Record<CheckResult, string> = {
+  correct: 'bg-emerald-400/15 text-emerald-300',
+  partly_correct: 'bg-amber-400/15 text-amber-300',
+  wrong: 'bg-rose-400/15 text-rose-300',
+  invented: 'bg-rose-500/25 text-rose-200',
+  unchecked: 'bg-slate-400/15 text-slate-300',
+}
+
+function CheckBadge({ result }: { result: CheckResult }) {
+  return (
+    <span className={`inline-block rounded-full px-2 py-0.5 text-[0.65rem] font-medium whitespace-nowrap ${CHECK_STYLE[result]}`}>
+      {RESULT_LABEL[result]}
+    </span>
+  )
+}
+
 const SECTIONS = [
   { key: 'q1', id: 'Q1', title: 'Professional obligations', Icon: ShieldIcon },
   { key: 'q2', id: 'Q2', title: 'Law of the land', Icon: ScaleIcon },
@@ -89,12 +106,15 @@ function ScoreBar({ score, delay = 0 }: { score: number | null; delay?: number }
 }
 
 function FindingItem({ finding }: { finding: Finding }) {
+  const check = worstResult(checkCitation(finding.citation, finding.issue))
   return (
     <li className="flex gap-2.5">
       <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${SEVERITY_DOT[finding.severity]}`} title={finding.severity} />
       <div className="min-w-0">
         <p className="text-sm leading-snug text-slate-200">{finding.issue}</p>
-        <p className="mt-1 font-mono text-[0.7rem] leading-snug break-words text-sky-300/90">{finding.citation}</p>
+        <p className="mt-1 font-mono text-[0.7rem] leading-snug break-words text-sky-300/90">
+          {finding.citation} {check && <CheckBadge result={check} />}
+        </p>
         <p className="mt-0.5 text-[0.65rem] tracking-wide text-slate-500 uppercase">
           {finding.severity} · {finding.confidence} confidence
         </p>
@@ -151,6 +171,61 @@ function SectionColumn({
   )
 }
 
+function CitationTable({ rows }: { rows: CitationCheck[] }) {
+  const unchecked = rows.filter((r) => r.result !== 'correct').length
+  return (
+    <Card title="Citation check">
+      <p className="mb-3 text-sm text-slate-400">
+        Every citation above, compared with the official source (Ontario e-Laws, Justice Laws, the Supreme Court of
+        Canada, PEO or Engineers Canada) as recorded in the project's citation register.
+        {unchecked > 0 && (
+          <span className="text-amber-200/90">
+            {' '}
+            {unchecked} of {rows.length} are not confirmed correct: check them at the linked source before relying on
+            them.
+          </span>
+        )}
+      </p>
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-sm">
+          <thead className="text-xs text-slate-500 uppercase">
+            <tr>
+              <th className="pr-3 pb-2 font-medium">Citation</th>
+              <th className="pr-3 pb-2 font-medium">What the agent claimed</th>
+              <th className="pr-3 pb-2 font-medium">What the source says</th>
+              <th className="pb-2 font-medium">Result</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-white/5">
+            {rows.map((r, i) => (
+              <tr key={i} className="align-top">
+                <td className="py-2 pr-3 font-mono text-[0.75rem] break-words text-sky-300/90">
+                  {r.sourceUrl ? (
+                    <a href={r.sourceUrl} target="_blank" rel="noreferrer" className="hover:underline">
+                      {r.citation}
+                    </a>
+                  ) : (
+                    r.citation
+                  )}
+                </td>
+                <td className="py-2 pr-3 text-slate-300">{r.agentClaimed}</td>
+                <td className="py-2 pr-3 text-slate-400">
+                  {r.sourceSays || <span className="italic">Not yet checked.</span>}
+                  {r.note && <p className="mt-1 text-xs text-amber-200/80">{r.note}</p>}
+                </td>
+                <td className="py-2">
+                  <CheckBadge result={r.result} />
+                  {r.checked && <p className="mt-1 text-[0.65rem] text-slate-500">checked {r.checked}</p>}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </Card>
+  )
+}
+
 function List({ items, tone = 'text-slate-300' }: { items: string[]; tone?: string }) {
   return (
     <ul className={`list-disc space-y-1.5 pl-5 text-sm leading-snug ${tone}`}>
@@ -166,6 +241,7 @@ export function ResultsPanel({ assessment }: { assessment: Assessment }) {
   const scores = [assessment.q1.score, assessment.q2.score, assessment.q3.score]
   const total = scores.every((s) => s !== null) ? scores.reduce<number>((a, b) => a + (b ?? 0), 0) : null
   const profile = assessment.project_profile
+  const citationChecks = checkAssessment(assessment)
   const profileRows = [
     ['Location', profile.location],
     ['Phase', profile.phase],
@@ -216,6 +292,8 @@ export function ResultsPanel({ assessment }: { assessment: Assessment }) {
           <SectionColumn key={key} id={id} title={title} Icon={Icon} result={assessment[key]} index={i} />
         ))}
       </div>
+
+      {citationChecks.length > 0 && <CitationTable rows={citationChecks} />}
 
       {assessment.conflicts.length > 0 && (
         <Card title="Where Q1, Q2 and Q3 conflict" className="border-amber-400/20">

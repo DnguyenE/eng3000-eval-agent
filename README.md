@@ -29,3 +29,13 @@ The prompts are in `prompts/`:
 - `report-format.md` - output format used by the results panel
 
 The example test cases are in `src/config/examples.ts`.
+
+## Citation check
+
+Every citation the agent gives is checked against the citation register in `src/config/citations.json`, and the results panel shows a citation check table: the citation, what the agent claimed, what the official source says, and the result (correct, partly correct, wrong, invented or not checked). A citation counts as checked only when the register records what the official source says and the date it was checked; anything else is shown as not checked.
+
+To check a citation, read it on [Ontario e-Laws](https://www.ontario.ca/laws), the [Justice Laws Website](https://laws-lois.justice.gc.ca), the [Supreme Court of Canada](https://decisions.scc-csc.ca), PEO or Engineers Canada, then fill in `sourceSays`, `result` and `checked` for its entry. If the check finds the agent's wording wrong, correct `prompts/discipline.md` too.
+
+```bash
+npm run citations:table > docs/citation-check.md   # the citation check table for the report
+```
