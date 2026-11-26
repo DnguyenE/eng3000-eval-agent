@@ -16,7 +16,10 @@ export type Level = 'low' | 'medium' | 'high'
 
 export interface Finding {
   issue: string
-  citation: string
+  /** Register IDs from prompts/citations.json, or full citation text for anything not in the register. */
+  citations: string[]
+  /** The agent gave no citations field at all, which is not the same as finding no legal basis. */
+  citationMissing: boolean
   severity: Severity
   confidence: Level
 }

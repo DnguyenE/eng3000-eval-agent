@@ -5,11 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "node scripts/check-citations.mjs && tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
     "check:keys": "node scripts/check-keys.mjs",
-    "citations:table": "node scripts/citation-table.mjs"
+    "citations:table": "node scripts/citation-table.mjs",
+    "citations:lint": "node scripts/check-citations.mjs"
   },
   "dependencies": {
     "motion": "^14.10.1",

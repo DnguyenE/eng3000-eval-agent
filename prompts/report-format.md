@@ -28,7 +28,7 @@
     "findings": [
       {
         "issue": "what was found",
-        "citation": "O. Reg. 941, s. 72(2)(b)  (or \"No specific legal basis found\")",
+        "citations": ["reg941-72-2-b", "CSA Z432 (safeguarding of machinery)"],
         "severity": "critical | major | minor | positive",
         "confidence": "high | medium | low"
       }
@@ -58,5 +58,6 @@ Rules for the block:
 - Use `null` for a score you cannot give, with rating `unknown`. Otherwise the rating follows the score: 3 is `pass`, 2 or 1 is `concern`, 0 is `fail`.
 - Give at least two `ethics` entries and at least one finding per question.
 - Pick exactly one value for every `a | b | c` field.
+- `citations`: every provision the finding relies on, one per entry. Give a provision from the citation register as its ID (for example `"reg941-72-2-b"`), and anything not in the register as the full written citation (for example a municipal by-law or a CSA standard). If you found no legal basis for the finding, use `[]`.
 - `confidence`: `high` only when the finding rests on facts stated in the description and a provision you are sure of; `medium` when you inferred the facts or are unsure of the exact section; `low` when both are uncertain. Most findings about things the description does not mention should be `medium` or `low`.
 - Keep each string short (one or two sentences) so the whole block stays readable.

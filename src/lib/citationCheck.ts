@@ -1,4 +1,4 @@
-import register from '../config/citations.json'
+import register from '../../prompts/citations.json'
 import type { Assessment } from '../types'
 
 export type CheckResult = 'correct' | 'partly_correct' | 'wrong' | 'invented' | 'unchecked'
@@ -6,10 +6,10 @@ export type CheckResult = 'correct' | 'partly_correct' | 'wrong' | 'invented' | 
 interface Instrument {
   name: string
   url: string
-  aliases: string[]
 }
 
 interface RegisterCheck {
+  id: string
   instrument: string
   provision: string | null
   claim: string
@@ -19,221 +19,190 @@ interface RegisterCheck {
 }
 
 export interface CitationCheck {
-  /** The citation as the agent wrote it, narrowed to one instrument and provision. */
+  /** The register ID, or the agent's own text for a citation that is not in the register. */
+  key: string
+  /** The citation as shown to the reader: the register's wording, or the agent's own text. */
   citation: string
+  /** True when the citation is a register entry. */
+  inRegister: boolean
   /** What the agent said in this assessment when it relied on the citation. */
   agentClaimed: string
   /** What the official source says, from the register. Empty when nobody has checked it. */
   sourceSays: string
   result: CheckResult
-  /** Why the result is what it is, when it is not a plain match against a checked entry. */
+  /** Why the result is what it is, when it is not a plain lookup of a checked entry. */
   note: string
-  instrument: string | null
   sourceUrl: string | null
   checked: string
 }
 
 const instruments = register.instruments as Record<string, Instrument>
-const checks = register.checks as RegisterCheck[]
+const registerChecks = register.checks as RegisterCheck[]
 
 const RESULTS: readonly CheckResult[] = ['correct', 'partly_correct', 'wrong', 'invented', 'unchecked']
 
-const aliasPatterns = Object.entries(instruments).flatMap(([id, inst]) =>
-  inst.aliases.map((alias) => ({ id, re: new RegExp(alias, 'gi') })),
-)
+/** The whole citation is the agent saying it found no legal basis, so it is not a citation. */
+// It must start the text, so "No specific legal basis found (a by-law may apply)" counts but
+// "Planning Act (no specific legal basis for the setback)" is still a citation.
+const NO_BASIS = /^\s*(?:no (?:specific )?legal basis|no citation given)\b|^\s*(?:n\/a|none)\.?\s*$/i
 
-/** Text the agent writes when it found no legal basis; it is not a citation. */
-const NO_BASIS = /no (specific )?legal basis|no citation given|^\s*(n\/a|none)\s*$/i
+/** A register ID is written in lower case, e.g. "reg941-72-2-b"; "NPC-300" or "EPA" are citations, not IDs. */
+const ID_SHAPE = /^[a-z][a-z0-9_]*(?:-[a-z0-9.]+)*$/
 
-const FIRST_SECTION = String.raw`\d+(?:\.\d+)*(?:\s*\([0-9a-z.]+\))*`
-const NEXT_SECTION = String.raw`(?:${FIRST_SECTION}|\([0-9a-z.]+\))`
-const SECTION = new RegExp(
-  String.raw`\b(?:ss?\.|sections?|subsections?)\s*(${FIRST_SECTION}(?:\s*(?:,|and|&|to)\s*${NEXT_SECTION})*)`,
-  'gi',
-)
-const PART = /\bPart\s+([IVXL]+(?:\.\d+)?|\d+(?:\.\d+)?)\b/gi
-
-function normalizeProvision(p: string): string {
-  return p.replace(/\s+/g, '').replace(/^(?:ss?\.|section)/i, '').toLowerCase()
-}
-
-function provisionsIn(text: string): string[] {
-  const found: string[] = []
-  for (const m of text.matchAll(SECTION)) {
-    let previous = ''
-    for (const part of m[1].split(/\s*(?:,|and|&|to)\s*/)) {
-      if (!part.trim()) continue
-      // "s. 72(2)(e) and (h)": a bare clause continues the provision before it.
-      const full = part.trim().startsWith('(') ? previous.replace(/\([^()]*\)$/, '') + part : part
-      previous = normalizeProvision(full)
-      found.push(previous)
-    }
-  }
-  for (const m of text.matchAll(PART)) found.push(`part${m[1].toLowerCase()}`)
-  return found
-}
-
-interface Segment {
-  instrument: string
-  /** The name the agent used for the instrument, such as "O. Reg. 941". */
-  alias: string
-  text: string
-}
-
-/** Splits a citation string into one segment per instrument it names, in order. */
-function segments(citation: string): Segment[] {
-  const hits: { id: string; start: number; end: number }[] = []
-  for (const { id, re } of aliasPatterns) {
-    re.lastIndex = 0
-    for (const m of citation.matchAll(re)) {
-      // "(under the Occupational Health and Safety Act)" names the parent act, not a separate citation.
-      if (/\bunder (?:the )?$/i.test(citation.slice(0, m.index))) continue
-      hits.push({ id, start: m.index, end: m.index + m[0].length })
-    }
-  }
-  hits.sort((a, b) => a.start - b.start || b.end - a.end)
-  const kept: typeof hits = []
-  for (const hit of hits) {
-    const last = kept[kept.length - 1]
-    if (last && hit.start < last.end) continue
-    kept.push(hit)
-  }
-
-  const out: Segment[] = []
-  kept.forEach((hit, i) => {
-    const text = citation.slice(hit.start, kept[i + 1]?.start ?? citation.length)
-    const prev = out[out.length - 1]
-    // "Ontario Building Code, O. Reg. 332/12, Part 6" names one instrument twice.
-    if (prev && prev.instrument === hit.id) prev.text += text
-    else out.push({ instrument: hit.id, alias: citation.slice(hit.start, hit.end), text })
-  })
-  return out
-}
-
-function findCheck(instrument: string, provision: string | null): RegisterCheck | undefined {
-  return checks.find(
-    (c) => c.instrument === instrument && (c.provision === null ? provision === null : normalizeProvision(c.provision) === provision),
-  )
-}
-
-function tidy(text: string): string {
-  return text
-    .replace(/\s+/g, ' ')
-    .replace(/(?:[\s,;:(]|\b(?:and|or|read with|see|also)\b)+$/i, '')
-    .replace(/^[\s,;:)]+/, '')
+export function isNoLegalBasis(text: string): boolean {
+  return !text.trim() || NO_BASIS.test(text)
 }
 
 function provisionLabel(provision: string): string {
-  return provision.startsWith('part') ? `Part ${provision.slice(4).toUpperCase()}` : `s. ${provision}`
+  return /^part\b/i.test(provision) ? provision : `s. ${provision}`
 }
 
-/** The nearest checked provision that contains this one, e.g. s. 7 for s. 7(a). */
-function findParent(instrument: string, provision: string): RegisterCheck | undefined {
-  for (let p = provision.replace(/\([^()]*\)$/, ''); p && p !== provision; provision = p, p = p.replace(/\([^()]*\)$/, '')) {
-    const check = findCheck(instrument, p)
-    if (check && resultOf(check) !== 'unchecked') return check
+/** The register's wording for a check, e.g. "Professional Engineers Act, R.S.O. 1990, c. P.28, s. 12". */
+export function registerCitation(check: { instrument: string; provision: string | null }): string {
+  const name = instruments[check.instrument]?.name ?? check.instrument
+  if (!check.provision) return name
+  // "Impact Assessment Act, S.C. 2019, c. 28, s. 1" already ends in the section that enacted it.
+  const enacted = name.match(/^([^,]+), (.*, s\. [\d.]+)$/)
+  return enacted
+    ? `${enacted[1]} (${enacted[2]}), ${provisionLabel(check.provision)}`
+    : `${name}, ${provisionLabel(check.provision)}`
+}
+
+/** Case, spacing, dashes and a trailing full stop do not change which citation a text names. */
+function normalize(text: string): string {
+  return text.toLowerCase().replace(/[‐-―]/g, '-').replace(/\s+/g, ' ').replace(/\.$/, '').trim()
+}
+
+const byId = new Map(registerChecks.map((c) => [c.id.toLowerCase(), c]))
+// Exact wording only: a written-out citation matches an entry when it is word for word the register's citation.
+const byWording = new Map(registerChecks.map((c) => [normalize(registerCitation(c)), c]))
+
+/**
+ * The result as the reader should see it. A result only counts once someone has recorded the date
+ * they checked it. A partly correct entry is sent to the agent as what the source actually says
+ * (see registerSection in api/chat.ts), so what the agent was given is correct.
+ */
+function liveResult(c: RegisterCheck): { result: CheckResult; note: string } {
+  if (!RESULTS.includes(c.result) || c.result === 'unchecked' || !c.checked) {
+    return { result: 'unchecked', note: 'In the register but not yet checked against the official source.' }
+  }
+  if (c.result === 'partly_correct') {
+    return {
+      result: 'correct',
+      note: 'The wording this project first used was only partly correct, so the agent is now given what the source says.',
+    }
+  }
+  return { result: c.result, note: '' }
+}
+
+function registerRow(check: RegisterCheck, agentClaimed: string, note = ''): CitationCheck {
+  const live = liveResult(check)
+  const confirmed = live.result !== 'unchecked'
+  return {
+    key: check.id,
+    citation: registerCitation(check),
+    inRegister: true,
+    agentClaimed,
+    sourceSays: confirmed ? check.sourceSays : '',
+    result: live.result,
+    note: [note, live.note].filter(Boolean).join(' '),
+    sourceUrl: instruments[check.instrument]?.url ?? null,
+    checked: confirmed ? check.checked : '',
+  }
+}
+
+/** For an ID such as "sor2022_110-2-1-a", the nearest register entry for a section that contains it ("sor2022_110-2-1"). */
+function sectionParent(id: string): RegisterCheck | undefined {
+  for (let parts = id.split('-').slice(0, -1); parts.length > 1; parts = parts.slice(0, -1)) {
+    const check = byId.get(parts.join('-'))
+    if (check?.provision) return check
   }
   return undefined
 }
 
-function resultOf(c: RegisterCheck | undefined): CheckResult {
-  return c && RESULTS.includes(c.result) && (c.result === 'unchecked' || c.checked) ? c.result : 'unchecked'
-}
+/** Looks up one entry of a finding's `citations` list. Returns null when it says no legal basis was found. */
+export function checkCitation(raw: string, agentClaimed: string): CitationCheck | null {
+  const text = raw.trim().replace(/^[`'"]+|[`'"]+$/g, '').replace(/[.,;:]+$/, '')
+  if (isNoLegalBasis(text)) return null
 
-/** Checks one citation string from a finding against the register. Returns one row per instrument and provision. */
-export function checkCitation(citation: string, agentClaimed: string): CitationCheck[] {
-  if (!citation.trim() || NO_BASIS.test(citation)) return []
+  // IDs are lower case, so "ESA" (the Electrical Safety Authority) never resolves to the `esa` entry.
+  // A section ID such as "CA1982-35" is still recognised in capitals: abbreviations have no dash.
+  // "reg941-72(2)(b)" is the ID reg941-72-2-b written with the section's brackets.
+  const idText = /\s/.test(text) ? text : text.replace(/\(([^()\s]+)\)/g, '-$1')
+  const isId = ID_SHAPE.test(idText) || (idText.includes('-') && ID_SHAPE.test(idText.toLowerCase()))
+  const id = isId ? idText.toLowerCase() : ''
+  const byIdMatch = isId ? byId.get(id) : undefined
+  if (byIdMatch) return registerRow(byIdMatch, agentClaimed)
 
-  const segs = segments(citation)
-  if (segs.length === 0) {
-    return [
-      {
-        citation: tidy(citation),
-        agentClaimed,
-        sourceSays: '',
-        result: 'unchecked',
-        note: 'Not in the citation register. Look it up on e-Laws or Justice Laws; if it cannot be found, treat it as invented.',
-        instrument: null,
-        sourceUrl: null,
-        checked: '',
-      },
-    ]
-  }
+  const byWordingMatch = byWording.get(normalize(text))
+  if (byWordingMatch) return registerRow(byWordingMatch, agentClaimed)
 
-  return segs.flatMap(({ instrument, alias, text }) => {
-    const inst = instruments[instrument]
-    // An act enacted by a section of another statute ("S.C. 2019, c. 28, s. 1") has that section in its own name.
-    const enactedBy = inst.name.match(/c\. [^,]+, s\. \d+$/)?.[0]
-    const provisions = provisionsIn(enactedBy ? text.replace(enactedBy, '') : text)
-    const targets = provisions.length > 0 ? provisions : [null]
-    const actCheck = findCheck(instrument, null)
+  // Text rows get their own key space, so a text "esa" never merges with the `esa` register row.
+  const base = { key: `text:${normalize(text)}`, citation: text, inRegister: false, agentClaimed, checked: '' }
 
-    return targets.map((provision): CitationCheck => {
-      const check = findCheck(instrument, provision)
-      const label = provisions.length > 1 && provision ? `${alias}, ${provisionLabel(provision)}` : tidy(text)
-      const base = { citation: label, agentClaimed, instrument: inst.name, sourceUrl: inst.url }
-
-      if (check) {
-        const result = resultOf(check)
-        return {
-          ...base,
-          sourceSays: result === 'unchecked' ? '' : check.sourceSays,
-          result,
-          note: result === 'unchecked' ? 'In the register but not yet checked against the official source.' : '',
-          checked: result === 'unchecked' ? '' : check.checked,
-        }
-      }
-
-      const parent = provision ? findParent(instrument, provision) : undefined
-      if (parent?.provision) {
-        return {
-          ...base,
-          sourceSays: parent.sourceSays,
-          result: 'unchecked',
-          note: `${provisionLabel(normalizeProvision(parent.provision))} was checked (text shown), but this part of it was not. Confirm it before relying on it.`,
-          checked: '',
-        }
-      }
-
-      const actResult = resultOf(actCheck)
+  if (isId && Object.hasOwn(instruments, id.split('-')[0])) {
+    const parent = sectionParent(id)
+    if (parent) {
+      const confirmed = liveResult(parent).result !== 'unchecked'
       return {
         ...base,
-        sourceSays: actResult === 'unchecked' || !actCheck ? '' : actCheck.sourceSays,
+        sourceSays: confirmed ? parent.sourceSays : '',
         result: 'unchecked',
-        note:
-          provision === null
-            ? 'The instrument is in the register but has not been checked yet.'
-            : actResult === 'unchecked'
-              ? 'This section has not been checked against the official source.'
-              : 'The instrument was checked, but this section was not. Confirm the section number before relying on it.',
-        checked: '',
-      }
-    })
-  })
-}
-
-/** Every citation in an assessment's findings, checked, with duplicates merged. */
-export function checkAssessment(assessment: Assessment): CitationCheck[] {
-  const rows = new Map<string, CitationCheck>()
-  for (const key of ['q1', 'q2', 'q3'] as const) {
-    for (const finding of assessment[key].findings) {
-      for (const row of checkCitation(finding.citation, finding.issue)) {
-        const id = `${row.instrument ?? ''}|${row.citation.toLowerCase()}`
-        const existing = rows.get(id)
-        if (existing) {
-          if (!existing.agentClaimed.includes(row.agentClaimed)) existing.agentClaimed += ` / ${row.agentClaimed}`
-        } else rows.set(id, row)
+        note: confirmed
+          ? `${registerCitation(parent)} was checked (text shown), but this part of it was not. Confirm it before relying on it.`
+          : `Not in the register. The nearest entry, ${registerCitation(parent)}, has not been checked yet either.`,
+        sourceUrl: instruments[parent.instrument]?.url ?? null,
       }
     }
+    // The act is real but this part of it has no entry. The app cannot tell an unlisted section from a
+    // made-up one, so it is shown as not checked, never as invented: only a person checking the source decides that.
+    const key = id.split('-')[0]
+    const inst = instruments[key]
+    const wholeAct = id === key
+    return {
+      ...base,
+      citation: wholeAct ? inst.name : text,
+      sourceSays: '',
+      result: 'unchecked',
+      note: wholeAct
+        ? `${inst.name} is in the register, but only specific sections of it are listed, so the act as a whole has not been checked.`
+        : `${inst.name} is in the register, but this section is not, so it has not been checked. Confirm the section exists and says what the agent claims before relying on it.`,
+      sourceUrl: inst.url,
+    }
+  }
+
+  return {
+    ...base,
+    sourceSays: '',
+    result: 'unchecked',
+    note: 'Not in the citation register, so it has not been checked. Look it up on e-Laws, Justice Laws or the body that publishes it before relying on it.',
+    sourceUrl: null,
+  }
+}
+
+/** A finding's citations, checked, with repeats removed. */
+export function checkCitations(citations: string[], agentClaimed: string): CitationCheck[] {
+  const rows = new Map<string, CitationCheck>()
+  for (const c of citations) {
+    const row = checkCitation(c, agentClaimed)
+    if (row && !rows.has(row.key)) rows.set(row.key, row)
   }
   return [...rows.values()]
 }
 
-/** The worst result among a finding's citations, for the badge next to it. */
-export function worstResult(rows: CitationCheck[]): CheckResult | null {
-  if (rows.length === 0) return null
-  const order: CheckResult[] = ['invented', 'wrong', 'unchecked', 'partly_correct', 'correct']
-  return order.find((r) => rows.some((row) => row.result === r)) ?? null
+/** Every citation in an assessment's findings, checked, with repeats merged. */
+export function checkAssessment(assessment: Assessment): CitationCheck[] {
+  const rows = new Map<string, { row: CitationCheck; claims: Set<string> }>()
+  for (const key of ['q1', 'q2', 'q3'] as const) {
+    for (const finding of assessment[key].findings) {
+      for (const row of checkCitations(finding.citations, finding.issue)) {
+        const existing = rows.get(row.key)
+        if (existing) existing.claims.add(row.agentClaimed)
+        else rows.set(row.key, { row, claims: new Set([row.agentClaimed]) })
+      }
+    }
+  }
+  return [...rows.values()].map(({ row, claims }) => ({ ...row, agentClaimed: [...claims].filter(Boolean).join(' / ') }))
 }
 
 export const RESULT_LABEL: Record<CheckResult, string> = {

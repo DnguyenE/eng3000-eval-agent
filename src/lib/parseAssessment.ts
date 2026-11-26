@@ -25,6 +25,23 @@ function oneOf<T extends string>(v: unknown, allowed: readonly T[], fallback: T)
 const objList = (v: unknown): Record<string, unknown>[] =>
   Array.isArray(v) ? v.filter((x): x is Record<string, unknown> => !!x && typeof x === 'object') : []
 
+/**
+ * A finding's citations: register IDs or citation text. Accepts `{ "id": ... }` objects too, and the
+ * single `citation` string that replies used before citations were given by ID.
+ */
+function citationList(f: Record<string, unknown>): string[] {
+  const given = f.citations ?? f.citation
+  // Older replies put several citations in one string, separated by semicolons.
+  const raw = Array.isArray(given) ? given : typeof given === 'string' ? given.split(';') : given == null ? [] : [given]
+  return raw
+    .map((c) => {
+      if (!c || typeof c !== 'object') return str(c)
+      const o = c as Record<string, unknown>
+      return str(o.id ?? o.text ?? o.citation)
+    })
+    .filter(Boolean)
+}
+
 const LEVELS = ['low', 'medium', 'high'] as const
 const VERDICTS = ['proceed', 'proceed_with_conditions', 'do_not_proceed'] as const
 
@@ -40,7 +57,9 @@ function section(v: unknown): SectionResult {
     findings: objList(o.findings).map(
       (f): Finding => ({
         issue: str(f.issue),
-        citation: str(f.citation, 'No citation given'),
+        citations: citationList(f),
+        // Any list, even an empty one, is the agent's answer ("no legal basis"); a missing, null or other value means no citation was given.
+        citationMissing: citationList(f).length === 0 && !Array.isArray(f.citations ?? f.citation),
         severity: oneOf<Severity>(f.severity, ['critical', 'major', 'minor', 'positive'], 'minor'),
         confidence: oneOf<Level>(f.confidence, LEVELS, 'medium'),
       }),

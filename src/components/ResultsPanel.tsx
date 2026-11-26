@@ -1,6 +1,6 @@
 import { motion, type Variants } from 'motion/react'
 import type { ReactNode } from 'react'
-import { checkAssessment, checkCitation, RESULT_LABEL, worstResult, type CheckResult, type CitationCheck } from '../lib/citationCheck'
+import { checkAssessment, checkCitations, RESULT_LABEL, type CheckResult, type CitationCheck } from '../lib/citationCheck'
 import type { Assessment, Finding, Level, Rating, SectionResult, Severity, Verdict } from '../types'
 import { AlertIcon, LeafIcon, PrintIcon, ScaleIcon, ShieldIcon } from './icons'
 
@@ -106,15 +106,25 @@ function ScoreBar({ score, delay = 0 }: { score: number | null; delay?: number }
 }
 
 function FindingItem({ finding }: { finding: Finding }) {
-  const check = worstResult(checkCitation(finding.citation, finding.issue))
+  const checks = checkCitations(finding.citations, finding.issue)
   return (
     <li className="flex gap-2.5">
       <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${SEVERITY_DOT[finding.severity]}`} title={finding.severity} />
       <div className="min-w-0">
         <p className="text-sm leading-snug text-slate-200">{finding.issue}</p>
-        <p className="mt-1 font-mono text-[0.7rem] leading-snug break-words text-sky-300/90">
-          {finding.citation} {check && <CheckBadge result={check} />}
-        </p>
+        {checks.length === 0 ? (
+          <p className="mt-1 font-mono text-[0.7rem] leading-snug text-slate-500">
+            {finding.citationMissing ? 'No citation given' : 'No specific legal basis found'}
+          </p>
+        ) : (
+          <ul className="mt-1 space-y-0.5">
+            {checks.map((c) => (
+              <li key={c.key} className="font-mono text-[0.7rem] leading-snug break-words text-sky-300/90">
+                {c.citation} <CheckBadge result={c.result} />
+              </li>
+            ))}
+          </ul>
+        )}
         <p className="mt-0.5 text-[0.65rem] tracking-wide text-slate-500 uppercase">
           {finding.severity} · {finding.confidence} confidence
         </p>
@@ -177,7 +187,10 @@ function CitationTable({ rows }: { rows: CitationCheck[] }) {
     <Card title="Citation check">
       <p className="mb-3 text-sm text-slate-400">
         Every citation above, compared with the official source (Ontario e-Laws, Justice Laws, the Supreme Court of
-        Canada, PEO or Engineers Canada) as recorded in the project's citation register.
+        Canada, PEO or Engineers Canada) as recorded in the project's citation register. Citations the agent gave
+        that are not in the register are listed too, so they can be checked by hand. The result rates the citation
+        (that the provision exists and says what the source column shows), not the agent's reasoning about the
+        project.
         {unchecked > 0 && (
           <span className="text-amber-200/90">
             {' '}
@@ -197,8 +210,8 @@ function CitationTable({ rows }: { rows: CitationCheck[] }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5">
-            {rows.map((r, i) => (
-              <tr key={i} className="align-top">
+            {rows.map((r) => (
+              <tr key={r.key} className="align-top">
                 <td className="py-2 pr-3 font-mono text-[0.75rem] break-words text-sky-300/90">
                   {r.sourceUrl ? (
                     <a href={r.sourceUrl} target="_blank" rel="noreferrer" className="hover:underline">

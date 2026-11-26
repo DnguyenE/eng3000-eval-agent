@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-const PROMPT_FILES = ['system-prompt.md', 'discipline.md', 'decision-rule.md', 'report-format.md']
+const PROMPT_FILES = ['system-prompt.md', 'discipline.md', 'citations.json', 'decision-rule.md', 'report-format.md']
 
 const MAX_MESSAGES = 20
 const MAX_MESSAGE_CHARS = 8_000
@@ -25,16 +25,77 @@ interface Provider {
   extraBody?: Record<string, unknown>
 }
 
+interface RegisterCheck {
+  id: string
+  instrument: string
+  provision: string | null
+  claim: string
+  sourceSays: string
+  result: string
+  checked: string
+  uncertain?: boolean
+}
+
+interface CitationRegister {
+  instruments: Record<string, { name: string; group: string; use?: string }>
+  checks: RegisterCheck[]
+}
+
+/** Headings for each instrument `group` in prompts/citations.json, in the order they are shown. */
+const REGISTER_GROUPS: Record<string, string> = {
+  field: 'Field-specific provisions',
+  q1: 'Q1 baseline: Ontario professional engineering obligations',
+  q2: 'Q2 baseline: law of the land',
+  q3: 'Q3 baseline: law on Indigenous rights and relationships with land',
+}
+
+function registerLine(c: RegisterCheck): string {
+  const provision = !c.provision ? 'whole instrument' : /^part\b/i.test(c.provision) ? c.provision : `s. ${c.provision}`
+  // A partly correct claim is replaced by what the source actually says.
+  const summary = c.checked && c.result === 'partly_correct' ? c.sourceSays : c.claim
+  const caution = c.uncertain ? ' (number not confirmed: give low or medium confidence and say it should be checked)' : ''
+  return `- \`${c.id}\` (${provision}): ${summary}${caution}`
+}
+
+/**
+ * The citation register as the list of law the model works from and cites by ID. It is the only
+ * place provisions are listed. Entries a check found wrong or invented are left out; for partly
+ * correct ones the model is given what the source actually says.
+ */
+export function registerSection(json: string): string {
+  const register = JSON.parse(json) as CitationRegister
+  const byInstrument = new Map<string, RegisterCheck[]>()
+  for (const c of register.checks) {
+    if (c.checked && (c.result === 'wrong' || c.result === 'invented')) continue
+    byInstrument.set(c.instrument, [...(byInstrument.get(c.instrument) ?? []), c])
+  }
+  const lines: string[] = []
+  for (const [group, heading] of Object.entries(REGISTER_GROUPS)) {
+    const instruments = Object.entries(register.instruments).filter(([id, inst]) => inst.group === group && byInstrument.has(id))
+    if (instruments.length === 0) continue
+    lines.push('', `## ${heading}`)
+    for (const [id, inst] of instruments) {
+      lines.push('', `**${inst.name}**${inst.use ? `: ${inst.use}` : ''}`)
+      for (const c of byInstrument.get(id) ?? []) lines.push(registerLine(c))
+    }
+  }
+  return [
+    '# Citation register',
+    '',
+    'These are the acts, regulations, sections and cases to assess projects against, and the ones the app can check against the official source. Cite one by giving its ID, exactly as written, in a finding\'s `citations` list. Use an ID only when it names exactly the provision you rely on (an ID without a section means the instrument as a whole). Anything else you rely on, such as a municipal by-law, a CSA standard, a case, a different section of a listed act or a law not listed here, goes in `citations` as the full written citation instead. Never make up an ID.',
+    ...lines,
+  ].join('\n')
+}
+
 let cachedPrompt: string | undefined
 
 export function buildSystemPrompt(): string {
   if (cachedPrompt && process.env.VERCEL) return cachedPrompt
   const dir = join(process.cwd(), 'prompts')
-  cachedPrompt = PROMPT_FILES.map((file) =>
-    readFileSync(join(dir, file), 'utf8')
-      .replace(/<!--[\s\S]*?-->/g, '')
-      .trim(),
-  ).join('\n\n---\n\n')
+  cachedPrompt = PROMPT_FILES.map((file) => {
+    const text = readFileSync(join(dir, file), 'utf8')
+    return file.endsWith('.json') ? registerSection(text) : text.replace(/<!--[\s\S]*?-->/g, '').trim()
+  }).join('\n\n---\n\n')
   return cachedPrompt
 }
 

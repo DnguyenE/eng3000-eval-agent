@@ -23,10 +23,10 @@ Also judge whether the project's **risks** are acceptable. They are not acceptab
 
 A **critical failure** is any of:
 
-- a credible risk to public safety, life or health that is not addressed (O. Reg. 941, s. 77.2(i) and s. 72(2)(b));
-- engineering work done or sealed by someone who is not licensed or not competent (Professional Engineers Act, s. 12; O. Reg. 941, s. 72(2)(e) and (h));
+- a credible risk to public safety, life or health that is not addressed (`reg941-77.2-i`, `reg941-72-2-b`);
+- engineering work done or sealed by someone who is not licensed or not competent (`pea-12`, `reg941-72-2-e`, `reg941-72-2-h`);
 - a clear breach of an applicable law, code or required approval;
-- Aboriginal or treaty rights likely affected with no consultation planned (Constitution Act, 1982, s. 35).
+- Aboriginal or treaty rights likely affected with no consultation planned (`ca1982-35`).
 
 Apply the rule in this order:
 
