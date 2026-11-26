@@ -8,8 +8,10 @@ import { Header } from './components/Header'
 import { Hero } from './components/Hero'
 import { PromptViewer } from './components/PromptViewer'
 import { ResultsPanel, ResultsPlaceholder } from './components/ResultsPanel'
-import { streamChat } from './lib/chatApi'
+import { fetchSystemPrompt, streamChat } from './lib/chatApi'
+import { downloadText } from './lib/download'
 import { splitMessage } from './lib/parseAssessment'
+import { buildTranscript, transcriptFilename } from './lib/transcript'
 import type { Message } from './types'
 
 function Footnote() {
@@ -82,6 +84,12 @@ export default function App() {
     abortRef.current?.abort()
   }
 
+  async function downloadTranscript() {
+    const systemPrompt = await fetchSystemPrompt().catch(() => null)
+    const date = new Date()
+    downloadText(transcriptFilename(date), buildTranscript(messages, systemPrompt, date))
+  }
+
   function reset() {
     abortRef.current?.abort()
     abortRef.current = null
@@ -104,7 +112,11 @@ export default function App() {
   return (
     <div className="flex min-h-dvh flex-col lg:h-dvh print:h-auto">
       <Background />
-      <Header onShowPrompt={() => setPromptOpen(true)} onReset={messages.length > 0 ? reset : undefined} />
+      <Header
+        onShowPrompt={() => setPromptOpen(true)}
+        onReset={messages.length > 0 ? reset : undefined}
+        onDownloadTranscript={messages.length > 0 ? downloadTranscript : undefined}
+      />
 
       <AnimatePresence mode="wait">
         {messages.length === 0 ? (

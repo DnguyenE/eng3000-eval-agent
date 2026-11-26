@@ -1,12 +1,13 @@
 import { motion } from 'motion/react'
-import { DocIcon, RefreshIcon, ShieldIcon } from './icons'
+import { DocIcon, DownloadIcon, RefreshIcon, ShieldIcon } from './icons'
 
 interface Props {
   onShowPrompt: () => void
   onReset?: () => void
+  onDownloadTranscript?: () => void
 }
 
-export function Header({ onShowPrompt, onReset }: Props) {
+export function Header({ onShowPrompt, onReset, onDownloadTranscript }: Props) {
   return (
     <header className="flex items-center justify-between gap-4 px-4 py-4 sm:px-6 print:hidden">
       <div className="flex items-center gap-3">
@@ -25,6 +26,16 @@ export function Header({ onShowPrompt, onReset }: Props) {
       </div>
 
       <div className="flex items-center gap-2">
+        {onDownloadTranscript && (
+          <button
+            type="button"
+            onClick={onDownloadTranscript}
+            className="inline-flex items-center gap-1.5 rounded-full border border-white/10 px-3 py-1.5 text-xs text-slate-300 transition-colors hover:border-white/25 hover:text-white"
+          >
+            <DownloadIcon className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Transcript</span>
+          </button>
+        )}
         {onReset && (
           <button
             type="button"

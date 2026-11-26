@@ -24,7 +24,14 @@ function entry(message: Message, index: number): string {
   return `## ${number}. ${message.role === 'user' ? 'User' : 'Agent'}\n\n${meta.join('\n')}\n\n${body}`
 }
 
-export function buildTranscript(messages: Message[], date = new Date()): string {
+function appendix(systemPrompt: string | null): string {
+  const body = systemPrompt
+    ? `The full system prompt the server sends with every request, as it was when this transcript was saved.\n\n${fence(systemPrompt)}`
+    : '_The system prompt could not be loaded when this transcript was saved._'
+  return `## Appendix: system prompt\n\n${body}`
+}
+
+export function buildTranscript(messages: Message[], systemPrompt: string | null, date = new Date()): string {
   const header = [
     '# ENG 3000 Project Evaluation Agent transcript',
     '',
@@ -33,5 +40,11 @@ export function buildTranscript(messages: Message[], date = new Date()): string 
     '',
     'Each message below is reproduced exactly as it was sent to or received from the agent.',
   ].join('\n')
-  return [header, ...messages.map(entry)].join('\n\n') + '\n'
+  return [header, ...messages.map(entry), appendix(systemPrompt)].join('\n\n') + '\n'
+}
+
+export function transcriptFilename(date = new Date()): string {
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const day = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+  return `eval-agent-transcript-${day}-${pad(date.getHours())}${pad(date.getMinutes())}.md`
 }
