@@ -23,9 +23,22 @@ Import the repo on Vercel, add `GROQ_API_KEY` and `GEMINI_API_KEY` as environmen
 
 The prompts are in `prompts/`:
 
-- `discipline.md` - engineering field and relevant laws
+- `citations.json` - the citation register: every act, regulation, section and case the agent uses, with when to apply it and the result of checking it against the official source. This is the only place law is listed.
+- `discipline.md` - engineering field and guidance on applying the law
 - `decision-rule.md` - scoring and verdict rules
 - `system-prompt.md` - general behaviour
 - `report-format.md` - output format used by the results panel
 
+To add a law, add its instrument (with a `group` of `field`, `q1`, `q2` or `q3`) and its checks to `citations.json`. Other prompt files refer to provisions by register ID in backticks, such as `` `ca1982-35` ``. `npm run citations:lint` (also run by `npm run build`) fails if a prompt file names an ID that does not exist or writes a citation out instead of using an ID.
+
 The example test cases are in `src/config/examples.ts`.
+
+## Citation check
+
+The citation register in `prompts/citations.json` is added to the prompt as a list of IDs. The agent cites a listed provision by its ID and the app looks it up; anything else the agent relies on (a by-law, a standard, a section that isn't listed) it writes out in full, and the app shows it as not in the register so it can be checked by hand. The results panel shows a citation check table: the citation, what the agent claimed, what the official source says, and the result (correct, partly correct, wrong, invented or not checked). A citation counts as checked only when the register records what the official source says and the date it was checked; anything else is shown as not checked.
+
+To check a citation, read it on [Ontario e-Laws](https://www.ontario.ca/laws), the [Justice Laws Website](https://laws-lois.justice.gc.ca), the [Supreme Court of Canada](https://decisions.scc-csc.ca), PEO or Engineers Canada, then fill in `sourceSays`, `result` and `checked` for its entry in `prompts/citations.json`. Nothing else needs updating: for a partly correct entry the agent is given what the source says, and an entry found wrong or invented is no longer sent to the agent.
+
+```bash
+npm run citations:table > docs/citation-check.md   # the citation check table for the report
+```
