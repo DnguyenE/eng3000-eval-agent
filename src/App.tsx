@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Background } from './components/Background'
 import { Chat } from './components/Chat'
 import { Composer } from './components/Composer'
@@ -11,6 +11,7 @@ import { ResultsPanel, ResultsPlaceholder } from './components/ResultsPanel'
 import { fetchSystemPrompt, streamChat } from './lib/chatApi'
 import { downloadText } from './lib/download'
 import { splitMessage } from './lib/parseAssessment'
+import { loadMessages, saveMessages } from './lib/storage'
 import { buildTranscript, transcriptFilename } from './lib/transcript'
 import type { Message } from './types'
 
@@ -23,11 +24,13 @@ function Footnote() {
 }
 
 export default function App() {
-  const [messages, setMessages] = useState<Message[]>([])
+  const [messages, setMessages] = useState<Message[]>(loadMessages)
   const [input, setInput] = useState('')
   const [streaming, setStreaming] = useState(false)
   const [promptOpen, setPromptOpen] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
+
+  useEffect(() => saveMessages(messages), [messages])
 
   const assessment = useMemo(() => {
     for (let i = messages.length - 1; i >= 0; i--) {
