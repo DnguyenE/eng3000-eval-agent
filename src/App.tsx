@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Background } from './components/Background'
 import { Chat } from './components/Chat'
 import { Composer } from './components/Composer'
@@ -8,8 +8,11 @@ import { Header } from './components/Header'
 import { Hero } from './components/Hero'
 import { PromptViewer } from './components/PromptViewer'
 import { ResultsPanel, ResultsPlaceholder } from './components/ResultsPanel'
-import { streamChat } from './lib/chatApi'
+import { fetchSystemPrompt, streamChat } from './lib/chatApi'
+import { downloadText } from './lib/download'
 import { splitMessage } from './lib/parseAssessment'
+import { loadMessages, saveMessages } from './lib/storage'
+import { buildTranscript, transcriptFilename } from './lib/transcript'
 import type { Message } from './types'
 
 function Footnote() {
@@ -21,11 +24,13 @@ function Footnote() {
 }
 
 export default function App() {
-  const [messages, setMessages] = useState<Message[]>([])
+  const [messages, setMessages] = useState<Message[]>(loadMessages)
   const [input, setInput] = useState('')
   const [streaming, setStreaming] = useState(false)
   const [promptOpen, setPromptOpen] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
+
+  useEffect(() => saveMessages(messages), [messages])
 
   const assessment = useMemo(() => {
     for (let i = messages.length - 1; i >= 0; i--) {
@@ -58,10 +63,7 @@ export default function App() {
         update(() => ({ error: (err as Error).message || 'Something went wrong. Please try again.' }))
       }
     } finally {
-      update((m) => ({
-        streaming: false,
-        content: m.content || (controller.signal.aborted ? '_Stopped._' : ''),
-      }))
+      update(() => ({ streaming: false, stopped: controller.signal.aborted || undefined }))
       if (abortRef.current === controller) {
         abortRef.current = null
         setStreaming(false)
@@ -78,11 +80,17 @@ export default function App() {
 
   function retry() {
     const last = messages[messages.length - 1]
-    if (last?.role === 'assistant' && last.error) run(messages.slice(0, -1))
+    if (last?.role === 'assistant' && last.error) run(messages)
   }
 
   function stop() {
     abortRef.current?.abort()
+  }
+
+  async function downloadTranscript() {
+    const systemPrompt = await fetchSystemPrompt().catch(() => null)
+    const date = new Date()
+    downloadText(transcriptFilename(date), buildTranscript(messages, systemPrompt, date))
   }
 
   function reset() {
@@ -107,7 +115,11 @@ export default function App() {
   return (
     <div className="flex min-h-dvh flex-col lg:h-dvh print:h-auto">
       <Background />
-      <Header onShowPrompt={() => setPromptOpen(true)} onReset={messages.length > 0 ? reset : undefined} />
+      <Header
+        onShowPrompt={() => setPromptOpen(true)}
+        onReset={messages.length > 0 ? reset : undefined}
+        onDownloadTranscript={messages.length > 0 ? downloadTranscript : undefined}
+      />
 
       <AnimatePresence mode="wait">
         {messages.length === 0 ? (

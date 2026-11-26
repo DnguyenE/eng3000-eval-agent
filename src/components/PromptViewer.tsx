@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useState } from 'react'
 import { fetchSystemPrompt } from '../lib/chatApi'
+import { downloadText } from '../lib/download'
 import { CheckIcon, CloseIcon, CopyIcon, DownloadIcon } from './icons'
 
 export function PromptViewer({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -30,13 +31,7 @@ export function PromptViewer({ open, onClose }: { open: boolean; onClose: () => 
   }
 
   function download() {
-    if (!prompt) return
-    const url = URL.createObjectURL(new Blob([prompt], { type: 'text/markdown' }))
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'project-evaluation-agent-system-prompt.md'
-    a.click()
-    URL.revokeObjectURL(url)
+    if (prompt) downloadText('project-evaluation-agent-system-prompt.md', prompt)
   }
 
   return (

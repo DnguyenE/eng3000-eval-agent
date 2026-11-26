@@ -7,6 +7,7 @@ export interface Message {
   provider?: string
   error?: string
   streaming?: boolean
+  stopped?: boolean
 }
 
 export type Verdict = 'proceed' | 'proceed_with_conditions' | 'do_not_proceed'
