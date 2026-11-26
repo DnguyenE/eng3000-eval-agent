@@ -58,10 +58,7 @@ export default function App() {
         update(() => ({ error: (err as Error).message || 'Something went wrong. Please try again.' }))
       }
     } finally {
-      update((m) => ({
-        streaming: false,
-        content: m.content || (controller.signal.aborted ? '_Stopped._' : ''),
-      }))
+      update(() => ({ streaming: false, stopped: controller.signal.aborted || undefined }))
       if (abortRef.current === controller) {
         abortRef.current = null
         setStreaming(false)
@@ -78,7 +75,7 @@ export default function App() {
 
   function retry() {
     const last = messages[messages.length - 1]
-    if (last?.role === 'assistant' && last.error) run(messages.slice(0, -1))
+    if (last?.role === 'assistant' && last.error) run(messages)
   }
 
   function stop() {

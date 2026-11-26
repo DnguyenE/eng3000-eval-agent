@@ -41,6 +41,14 @@ export function MessageBubble({ message, onRetry }: Props) {
               </div>
             )}
 
+            {message.stopped && !message.content && (
+              <div className="md">
+                <p>
+                  <em>Stopped.</em>
+                </p>
+              </div>
+            )}
+
             {message.streaming && !text && !pending && <TypingIndicator />}
             {pending && (
               <div className="mt-3">
