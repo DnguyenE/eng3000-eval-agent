@@ -7,6 +7,10 @@ const MAX_MESSAGES = 20
 const MAX_MESSAGE_CHARS = 8_000
 const MAX_TOTAL_CHARS = 40_000
 const MAX_OUTPUT_TOKENS = 4_096
+// vercel.json gives this function 60 seconds; a provider that has not started replying in time is
+// skipped, and no new provider is tried after the deadline, so the user gets an error, not a 504.
+const PROVIDER_START_TIMEOUT_MS = 20_000
+const PROVIDER_DEADLINE_MS = 50_000
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000
 const RATE_LIMIT_MAX_REQUESTS = 20
 
@@ -111,17 +115,8 @@ function configuredProviders(): Provider[] {
   const groqKey = process.env.GROQ_API_KEY
   const geminiKey = process.env.GEMINI_API_KEY
 
-  if (groqKey) {
-    for (const model of modelList(process.env.GROQ_MODEL, 'openai/gpt-oss-120b,qwen/qwen3.8-27b')) {
-      providers.push({
-        name: 'Groq',
-        url: 'https://api.groq.com/openai/v1/chat/completions',
-        apiKey: groqKey,
-        model,
-      })
-    }
-  }
-
+  // Gemini goes first: Groq's free tier caps these models at 8,000 tokens per minute, which is less
+  // than the system prompt alone, so Groq only helps on a paid plan.
   if (geminiKey) {
     for (const model of modelList(process.env.GEMINI_MODEL, 'gemini-3.5-flash,gemini-3.5-flash-lite')) {
       providers.push({
@@ -131,6 +126,17 @@ function configuredProviders(): Provider[] {
         model,
         // Gemini counts thinking tokens against max_tokens, which can truncate the JSON report.
         extraBody: { reasoning_effort: 'low' },
+      })
+    }
+  }
+
+  if (groqKey) {
+    for (const model of modelList(process.env.GROQ_MODEL, 'openai/gpt-oss-120b,qwen/qwen3.8-27b')) {
+      providers.push({
+        name: 'Groq',
+        url: 'https://api.groq.com/openai/v1/chat/completions',
+        apiKey: groqKey,
+        model,
       })
     }
   }
@@ -262,8 +268,35 @@ export async function POST(request: Request): Promise<Response> {
   const fullMessages = [{ role: 'system', content: buildSystemPrompt() }, ...messages]
   const failures: string[] = []
   let allRateLimited = true
+  let slow = false
+  const startedAt = Date.now()
 
   for (const provider of providers) {
+    const label = `${provider.name} ${provider.model}`
+    const attemptStart = Date.now()
+    const timeLeft = PROVIDER_DEADLINE_MS - (attemptStart - startedAt)
+    if (timeLeft <= 0) {
+      slow = true
+      break
+    }
+    const fail = (reason: string) => {
+      const entry = `${label}: ${reason} (${((Date.now() - attemptStart) / 1000).toFixed(1)}s)`
+      failures.push(entry)
+      console.warn('AI provider failed:', entry)
+    }
+
+    // Aborts the request if the provider has not started replying in time. The timer is cleared once
+    // it replies, so a long streamed answer is not cut off; the user's own cancel still aborts it.
+    const controller = new AbortController()
+    const cancel = () => controller.abort()
+    request.signal.addEventListener('abort', cancel)
+    const waitMs = Math.min(PROVIDER_START_TIMEOUT_MS, timeLeft)
+    let timedOut = false
+    const timer = setTimeout(() => {
+      timedOut = true
+      controller.abort()
+    }, waitMs)
+
     let upstream: Response
     try {
       upstream = await fetch(provider.url, {
@@ -277,13 +310,17 @@ export async function POST(request: Request): Promise<Response> {
           max_tokens: MAX_OUTPUT_TOKENS,
           ...provider.extraBody,
         }),
-        signal: request.signal,
+        signal: controller.signal,
       })
     } catch (err) {
       if (request.signal.aborted) return new Response(null, { status: 499 })
+      request.signal.removeEventListener('abort', cancel)
       allRateLimited = false
-      failures.push(`${provider.name} ${provider.model}: ${(err as Error).message}`)
+      if (timedOut) slow = true
+      fail(timedOut ? `no reply within ${Math.round(waitMs / 1000)}s` : (err as Error).message)
       continue
+    } finally {
+      clearTimeout(timer)
     }
 
     if (upstream.ok && upstream.body) {
@@ -297,12 +334,16 @@ export async function POST(request: Request): Promise<Response> {
       })
     }
 
+    request.signal.removeEventListener('abort', cancel)
     if (upstream.status !== 429) allRateLimited = false
     const detail = (await upstream.text().catch(() => '')).slice(0, 300)
-    failures.push(`${provider.name} ${provider.model}: HTTP ${upstream.status} ${detail}`)
+    fail(`HTTP ${upstream.status} ${detail}`)
   }
 
   console.error('All AI providers failed:', failures)
+  if (slow) {
+    return jsonError(504, 'The AI service is taking too long to respond right now. Please try again in a minute.')
+  }
   if (allRateLimited) {
     return jsonError(429, 'The free AI quota is used up for the moment. Please try again in a minute.')
   }

@@ -2,7 +2,7 @@
  
 ENG 3000 Part 2. A chat agent that evaluates an engineering project against Ontario professional obligations (Q1), the law (Q2), and benefit to the land (Q3), then gives a recommendation.
 
-Built with React + Vite, hosted on Vercel. Uses Groq's free API, with Gemini as a backup.
+Built with React + Vite, hosted on Vercel. Uses Gemini's free API, with Groq as a backup. Groq's free tier allows 8,000 tokens per minute, less than the system prompt, so Groq only works as the backup on a paid plan.
 
 ## Setup
 
