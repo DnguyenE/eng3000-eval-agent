@@ -16,7 +16,7 @@ const cell = (text) => String(text || '').replace(/\|/g, '\\|').replace(/\s+/g, 
 
 const rows = register.checks.map((c) => {
   const inst = register.instruments[c.instrument]
-  const section = c.provision ? (/^part\b/i.test(c.provision) ? c.provision : `s. ${c.provision}`) : ''
+  const section = c.provision ? (/^(?:part|div)\b/i.test(c.provision) ? c.provision : `s. ${c.provision}`) : ''
   // Same as registerCitation in src/lib/citationCheck.ts: a name ending in its enacting section gets it in brackets.
   const enacted = section && inst.name.match(/^([^,]+), (.*, s\. [\d.]+)$/)
   const label = !section ? inst.name : enacted ? `${enacted[1]} (${enacted[2]}), ${section}` : `${inst.name}, ${section}`
@@ -39,7 +39,7 @@ const counts = rows.reduce((acc, r) => {
 
 console.log('# Citation check table\n')
 console.log(
-  'Each act, regulation, section and case in the agent\'s citation register, with the result of checking it against Ontario e-Laws, the federal Justice Laws Website, the Supreme Court of Canada, PEO or Engineers Canada. The result rates the citation as the agent was told it, not the agent\'s reasoning about a project. This table records each original check. For a partly correct row, the claim column is the wording first used; the agent is now given what the source says instead, so the app shows citations of that entry as correct. Rows marked "Not checked yet" have not been confirmed and must not be presented as correct. Generated from `prompts/citations.json` by `npm run citations:table`; edit the register, not this file.\n',
+  'Each act, regulation, section and case in the agent\'s citation register, with the result of checking it against Ontario e-Laws, the federal Justice Laws Website, the Supreme Court of Canada, PEO, Engineers Canada or the City of Toronto Municipal Code. The result rates the citation as the agent was told it, not the agent\'s reasoning about a project. This table records each original check. For a partly correct row, the claim column is the wording first used; the agent is now given what the source says instead, so the app shows citations of that entry as correct. Rows marked "Not checked yet" have not been confirmed and must not be presented as correct. Generated from `prompts/citations.json` by `npm run citations:table`; edit the register, not this file.\n',
 )
 console.log(Object.entries(counts).map(([k, v]) => `${k}: ${v}`).join(' · ') + '\n')
 console.log('| Citation | What the agent claims | What the source actually says | Result |')

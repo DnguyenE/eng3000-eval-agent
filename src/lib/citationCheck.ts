@@ -54,7 +54,7 @@ export function isNoLegalBasis(text: string): boolean {
 }
 
 function provisionLabel(provision: string): string {
-  return /^part\b/i.test(provision) ? provision : `s. ${provision}`
+  return /^(?:part|div)\b/i.test(provision) ? provision : `s. ${provision}`
 }
 
 /** The register's wording for a check, e.g. "Professional Engineers Act, R.S.O. 1990, c. P.28, s. 12". */

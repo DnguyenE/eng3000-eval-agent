@@ -50,7 +50,7 @@ const REGISTER_GROUPS: Record<string, string> = {
 }
 
 function registerLine(c: RegisterCheck): string {
-  const provision = !c.provision ? 'whole instrument' : /^part\b/i.test(c.provision) ? c.provision : `s. ${c.provision}`
+  const provision = !c.provision ? 'whole instrument' : /^(?:part|div)\b/i.test(c.provision) ? c.provision : `s. ${c.provision}`
   // A partly correct claim is replaced by what the source actually says.
   const summary = c.checked && c.result === 'partly_correct' ? c.sourceSays : c.claim
   const caution = c.uncertain ? ' (number not confirmed: give low or medium confidence and say it should be checked)' : ''
