@@ -1,8 +1,10 @@
 import { motion, type Variants } from 'motion/react'
 import type { ReactNode } from 'react'
 import { checkAssessment, checkCitations, RESULT_LABEL, type CheckResult, type CitationCheck } from '../lib/citationCheck'
+import { citationCsv, citationFilename, citationMarkdown, type CitationExport } from '../lib/citationExport'
+import { downloadText } from '../lib/download'
 import type { Assessment, Finding, Level, Rating, SectionResult, Severity, Verdict } from '../types'
-import { AlertIcon, LeafIcon, PrintIcon, ScaleIcon, ShieldIcon } from './icons'
+import { AlertIcon, DownloadIcon, LeafIcon, PrintIcon, ScaleIcon, ShieldIcon } from './icons'
 
 const VERDICT_STYLE: Record<Verdict, { label: string; ring: string; text: string; bg: string; glow: string }> = {
   proceed: {
@@ -181,13 +183,36 @@ function SectionColumn({
   )
 }
 
-function CitationTable({ rows }: { rows: CitationCheck[] }) {
+function CitationTable({ rows, projectName, verdictLabel }: { rows: CitationCheck[]; projectName: string; verdictLabel: string }) {
   const unchecked = rows.filter((r) => r.result !== 'correct').length
+  const download = (extension: 'md' | 'csv') => {
+    const date = new Date()
+    const data: CitationExport = { projectName, verdictLabel, rows, date }
+    const filename = citationFilename(projectName, extension, date)
+    if (extension === 'md') downloadText(filename, citationMarkdown(data))
+    else downloadText(filename, citationCsv(data), 'text/csv')
+  }
   return (
-    <Card title="Citation check">
+    <Card>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <h3 className="text-sm font-semibold tracking-wide text-slate-300 uppercase">Citation check</h3>
+        <div className="flex gap-2 print:hidden">
+          {(['md', 'csv'] as const).map((extension) => (
+            <button
+              key={extension}
+              type="button"
+              onClick={() => download(extension)}
+              className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-3 py-1 text-xs text-slate-200 hover:bg-white/10"
+            >
+              <DownloadIcon className="h-3.5 w-3.5" /> Download .{extension}
+            </button>
+          ))}
+        </div>
+      </div>
       <p className="mb-3 text-sm text-slate-400">
         Every citation above, compared with the official source (Ontario e-Laws, Justice Laws, the Supreme Court of
-        Canada, PEO or Engineers Canada) as recorded in the project's citation register. Citations the agent gave
+        Canada, PEO, Engineers Canada or the City of Toronto Municipal Code) as recorded in the project's citation
+        register. Citations the agent gave
         that are not in the register are listed too, so they can be checked by hand. The result rates the citation
         (that the provision exists and says what the source column shows), not the agent's reasoning about the
         project.
@@ -306,7 +331,9 @@ export function ResultsPanel({ assessment }: { assessment: Assessment }) {
         ))}
       </div>
 
-      {citationChecks.length > 0 && <CitationTable rows={citationChecks} />}
+      {citationChecks.length > 0 && (
+        <CitationTable rows={citationChecks} projectName={profile.name} verdictLabel={verdict.label} />
+      )}
 
       {assessment.conflicts.length > 0 && (
         <Card title="Where Q1, Q2 and Q3 conflict" className="border-amber-400/20">
