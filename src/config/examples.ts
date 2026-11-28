@@ -1,14 +1,33 @@
 // Edit these to match your group's Part 1 cases and your own test projects.
-// They map to the three tests required by the brief (known case, planted problems, stress test).
+// The Part 3 entry is the real proposal and personas; the rest map to the three Part 2 tests
+// (known case, planted problems, stress test).
+import projectDoc from '../../docs/part3/project.md?raw'
+import personasDoc from '../../docs/part3/personas.md?raw'
 
 export interface Example {
   id: string
   label: string
   description: string
   prompt: string
+  /** Spans the full width of the example grid. */
+  wide?: boolean
 }
 
+/** The part of a docs/part3 file after its "---" line: the text given to the agent, without the file's heading. */
+const agentText = (doc: string): string => doc.split(/\n---\n/).slice(1).join('\n---\n').trim()
+
 export const EXAMPLES: Example[] = [
+  {
+    id: 'part-3',
+    label: 'Part 3: York Station ventilation',
+    description: 'Our Part 3 proposal word for word, with the five interview personas.',
+    prompt: `Please evaluate this proposal.
+
+${agentText(projectDoc)}
+
+${agentText(personasDoc)}`,
+    wide: true,
+  },
   {
     id: 'known-case',
     label: 'Known case: Ocean Ranger',

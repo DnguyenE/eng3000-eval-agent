@@ -14,6 +14,7 @@ export type Verdict = 'proceed' | 'proceed_with_conditions' | 'do_not_proceed'
 export type Rating = 'pass' | 'concern' | 'fail' | 'unknown'
 export type Severity = 'critical' | 'major' | 'minor' | 'positive'
 export type Level = 'low' | 'medium' | 'high'
+export type Addressed = 'yes' | 'partly' | 'no'
 
 export interface Finding {
   issue: string
@@ -42,6 +43,8 @@ export interface Assessment {
     decision_makers: string[]
   }
   stakeholders: { group: string; interest: string; at_the_table: boolean }[]
+  /** Empty when no persona summaries were given, as in the Part 2 test cases. */
+  persona_concerns: { persona: string; concern: string; addressed: Addressed; covered_by: string }[]
   q1: SectionResult
   q2: SectionResult
   q3: SectionResult

@@ -16,7 +16,7 @@ export function ExampleChips({ onPick, compact }: { onPick: (prompt: string) => 
           whileTap={{ scale: 0.97 }}
           className={`glass group text-left transition-colors hover:border-sky-400/40 hover:bg-white/[0.07] ${
             compact ? 'px-3 py-2' : 'p-4'
-          }`}
+          } ${example.wide ? (compact ? 'col-span-2' : 'sm:col-span-2') : ''}`}
         >
           <span className="text-sm font-semibold text-white group-hover:text-sky-200">{example.label}</span>
           {!compact && <span className="mt-1 block text-xs leading-snug text-slate-400">{example.description}</span>}

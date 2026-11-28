@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { checkAssessment, checkCitations, RESULT_LABEL, type CheckResult, type CitationCheck } from '../lib/citationCheck'
 import { citationCsv, citationFilename, citationMarkdown, type CitationExport } from '../lib/citationExport'
 import { downloadText } from '../lib/download'
-import type { Assessment, Finding, Level, Rating, SectionResult, Severity, Verdict } from '../types'
+import type { Addressed, Assessment, Finding, Level, Rating, SectionResult, Severity, Verdict } from '../types'
 import { AlertIcon, DownloadIcon, LeafIcon, PrintIcon, ScaleIcon, ShieldIcon } from './icons'
 
 const VERDICT_STYLE: Record<Verdict, { label: string; ring: string; text: string; bg: string; glow: string }> = {
@@ -57,6 +57,12 @@ const CHECK_STYLE: Record<CheckResult, string> = {
   wrong: 'bg-rose-400/15 text-rose-300',
   invented: 'bg-rose-500/25 text-rose-200',
   unchecked: 'bg-slate-400/15 text-slate-300',
+}
+
+const ADDRESSED_STYLE: Record<Addressed, { label: string; className: string }> = {
+  yes: { label: 'Addressed', className: 'bg-emerald-400/15 text-emerald-300' },
+  partly: { label: 'With conditions', className: 'bg-amber-400/15 text-amber-300' },
+  no: { label: 'Not addressed', className: 'bg-rose-400/15 text-rose-300' },
 }
 
 function CheckBadge({ result }: { result: CheckResult }) {
@@ -389,6 +395,42 @@ export function ResultsPanel({ assessment }: { assessment: Assessment }) {
           </Card>
         )}
       </div>
+
+      {assessment.persona_concerns.length > 0 && (
+        <Card title="Persona concerns">
+          <p className="mb-3 text-sm text-slate-400">
+            What the interview personas need or worry about, and whether the project or the agent's conditions cover it.
+          </p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="text-xs text-slate-500 uppercase">
+                <tr>
+                  <th className="pr-3 pb-2 font-medium">Persona</th>
+                  <th className="pr-3 pb-2 font-medium">Concern</th>
+                  <th className="pr-3 pb-2 font-medium">Covered by</th>
+                  <th className="pb-2 font-medium">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {assessment.persona_concerns.map((p, i) => (
+                  <tr key={i} className="align-top">
+                    <td className="py-2 pr-3 font-medium whitespace-nowrap text-slate-100">{p.persona || '-'}</td>
+                    <td className="py-2 pr-3 text-slate-200">{p.concern}</td>
+                    <td className="py-2 pr-3 text-slate-400">{p.covered_by || '-'}</td>
+                    <td className="py-2">
+                      <span
+                        className={`inline-block rounded-full px-2 py-0.5 text-[0.65rem] font-medium whitespace-nowrap ${ADDRESSED_STYLE[p.addressed].className}`}
+                      >
+                        {ADDRESSED_STYLE[p.addressed].label}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
 
       {assessment.risks.length > 0 && (
         <Card title="Risk and uncertainty">

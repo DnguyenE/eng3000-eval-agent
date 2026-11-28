@@ -1,4 +1,4 @@
-import type { Assessment, Finding, Level, Rating, SectionResult, Severity, Verdict } from '../types'
+import type { Addressed, Assessment, Finding, Level, Rating, SectionResult, Severity, Verdict } from '../types'
 
 export interface SplitMessage {
   text: string
@@ -147,6 +147,14 @@ export function normalizeAssessment(raw: unknown): Assessment | null {
       interest: str(s.interest),
       at_the_table: s.at_the_table !== false,
     })),
+    persona_concerns: objList(o.persona_concerns)
+      .map((p) => ({
+        persona: str(p.persona),
+        concern: str(p.concern),
+        addressed: oneOf<Addressed>(p.addressed, ['yes', 'partly', 'no'], 'no'),
+        covered_by: str(p.covered_by),
+      }))
+      .filter((p) => p.concern),
     q1: section(o.q1),
     q2: section(o.q2),
     q3: section(o.q3),

@@ -21,6 +21,9 @@
   "stakeholders": [
     { "group": "who", "interest": "what they gain or risk", "at_the_table": true }
   ],
+  "persona_concerns": [
+    { "persona": "persona name", "concern": "a need or worry they raised", "addressed": "yes | partly | no", "covered_by": "the finding, condition or project feature that covers it, or what is missing" }
+  ],
   "q1": {
     "score": 2,
     "rating": "pass | concern | fail | unknown",
@@ -57,6 +60,7 @@ Rules for the block:
 
 - Use `null` for a score you cannot give, with rating `unknown`. Otherwise the rating follows the score: 3 is `pass`, 2 or 1 is `concern`, 0 is `fail`.
 - Give at least two `ethics` entries and at least one finding per question.
+- `persona_concerns`: only when the user gave persona summaries; otherwise `[]`. Give each persona's main needs and worries (at most three per persona), merging ones several personas share. `addressed` is `yes` when the project as described handles it, `partly` when a condition you set would handle it, and `no` when nothing in the project or your conditions does.
 - Pick exactly one value for every `a | b | c` field.
 - `citations`: every provision the finding relies on, one per entry. Give a provision from the citation register as its ID (for example `"reg941-72-2-b"`), and anything not in the register as the full written citation (for example a municipal by-law or a CSA standard). If you found no legal basis for the finding, use `[]`.
 - `confidence`: `high` only when the finding rests on facts stated in the description and a provision you are sure of; `medium` when you inferred the facts or are unsure of the exact section; `low` when both are uncertain. Most findings about things the description does not mention should be `medium` or `low`.
